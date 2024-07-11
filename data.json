@@ -1,0 +1,9 @@
+{
+    "secretkey_model": "sk-fLu0wrjLaSqFNvBsfMxClue8iM5zTzMCEBrgwVjAHNhF9Eum",
+    "api_token_telegram": "7338568070:AAGGEX3KVPu02IPd7wGHenRF1q1qXY0RfXQ",
+    "start_time": "00:00:30",
+    "host": "https://api.rus-gpt.com/v1",
+    "model": "casperhansen/llama-3-70B-instruct-awq",
+    "name": "Llama-3-70b",
+    "max_tokens": "10000"
+}
