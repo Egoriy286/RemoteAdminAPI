@@ -51,4 +51,4 @@ jobs:
             docker pull ${{ steps.meta.outputs.tags }}
             docker stop my-container || true
             docker rm my-container || true
-            docker run -d -p 5000:5000 --name my-container ${{ steps.meta.outputs.tags }}
+            docker run -d -p 5000:5000 --restart=always --name my-container ${{ steps.meta.outputs.tags }}
