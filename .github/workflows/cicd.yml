@@ -48,7 +48,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}  # или использовать ${{ secrets.SERVER_SSH_PRIVATE_KEY }} в зависимости от настроек сервера
           port: ${{ secrets.SERVER_SSH_PORT }}
           script: |
-            docker pull ghcr.io/${{ github.repository }}
+            docker pull ghcr.io/${{ steps.meta.outputs.version }}
             docker stop my-container || true
             docker rm my-container || true
-            docker run -d -p 5000:5000 --name my-container ghcr.io/${{ github.repository }}
+            docker run -d -p 5000:5000 --name my-container ghcr.io/${{ steps.meta.outputs.version }}
