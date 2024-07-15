@@ -7,22 +7,26 @@ import asyncio
 import openai
 import time, os
 import json
-
 json_file_path = 'data.json'
 
-with open(json_file_path, 'r') as file:
-    data = json.load(file)
+# Политика конфиденциальности
+POLICY = """
+Мы уважаем вашу конфиденциальность и строго соблюдаем все нормы защиты данных. Мы собираем и используем только те данные, которые необходимы для предоставления наших услуг. Все данные хранятся в безопасности и ни при каких обстоятельствах не будут переданы третьим лицам без вашего согласия.
+"""
 
 # Конфигурация
-API_TOKEN = data['api_token_telegram']
-MODEL = data['model']
-SECRET_KEY = data['secretkey_model']
-HOST = data['host']
+API_TOKEN = None
+MODEL = None
+SECRET_KEY = None
+MAX_TOKENS = None
+NAME = None
+HOST = None
 client = None
 bot = None
 dp = None
+
 def config():
-    global API_TOKEN, MODEL, SECRET_KEY, HOST, client, bot, dp
+    global API_TOKEN, NAME, MODEL, SECRET_KEY, HOST, client, bot, dp, MAX_TOKENS
     with open(json_file_path, 'r') as file:
         data = json.load(file)
 
@@ -30,8 +34,10 @@ def config():
     API_TOKEN = data['api_token_telegram']
     MODEL = data['model']
     SECRET_KEY = data['secretkey_model']
+    MAX_TOKENS = data['max_tokens']
     HOST = data['host']
-
+    NAME = data['name']
+    file.close()
     try:
         client = openai.AsyncOpenAI(
             api_key=SECRET_KEY,
@@ -41,7 +47,7 @@ def config():
         dp = Dispatcher()
         logging.warning("data: client, bot, dp successful load")
     except(Exception):
-        logging.critical("Data not load. Check data.json!!!")
+        logging.critical("Dispatcher bad check api. Check data.json!!!")
         pass
 config()
 LOG_DIR = 'logs'
@@ -89,18 +95,20 @@ def clear(user_id):
 
 @dp.message(CommandStart())
 async def send_welcome(message: types.Message):
+    global NAME
     user_id = message.from_user.id
 
     # Стираем историю сообщений пользователя
     if user_id in user_history:
         del user_history[user_id]
 
-    logger.info(f"User {user_id}, started a new session, NEW_SESSION")
+    logger.info(f"{user_id}, user start, NEW_SESSION")
 
-    await message.reply(f"Привет я ИИ {data['name']}! Отправь мне сообщение, и я отвечу на него.")
+    await message.reply(f"Привет я ИИ {NAME}! Отправь мне сообщение, и я отвечу на него.")
 
 @dp.message(F.text)
 async def echo(message: types.Message):
+    global MAX_TOKENS, MODEL
     user_id = message.from_user.id
     if user_id not in user_history:
         user_history[user_id] = []
@@ -115,6 +123,10 @@ async def echo(message: types.Message):
 
 
     try:
+        temp = {'status_model': True}
+        with open("temp.json", 'w') as file:
+            json.dump(temp, file, indent=4)
+        file.close()
         # Отправляем запрос к модели
         timer = time.time()
         chat_response = await client.chat.completions.create(
@@ -127,19 +139,21 @@ async def echo(message: types.Message):
         logger.info(f"{user_id}, {chat_response.usage.total_tokens}, TOTAL_TOKENS")
         response_text = chat_response.choices[0].message.content
         logger.info(f"{user_id}, Hide, RESPONSE")
-        if (chat_response.usage.total_tokens > int(data['max_tokens'])):
+        if (chat_response.usage.total_tokens > int(MAX_TOKENS)):
             clear(user_id)
 
         # Добавляем ответ модели в историю
         user_history[user_id].append({"role": "assistant", "content": response_text})
     except(Exception):
-        response_text=None
+        temp = {'status_model': False}
+        with open("temp.json", 'w') as file:
+            json.dump(temp, file, indent=4)
+        file.close()
+        response_text = None
         logger.critical("Connection to model bad!!!")
         pass
 
-
     await message.answer(response_text)
-
 
 @dp.message(F.text, Command("policy"))
 def POLICY(message: types.Message):
@@ -148,21 +162,15 @@ def POLICY(message: types.Message):
 
 
 def start_bot():
+
     while (True):
         try:
             logger.warning("bot successful start")
             asyncio.run(dp.start_polling(bot))
         except(Exception):
             config()
-            logger.critical("bot bad connection please check data")
-            time.sleep(30)
+            logger.critical("bot not start please check")
+            time.sleep(8)
 
 if __name__ == "__main__":
     start_bot()
-
-# Политика конфиденциальности
-POLICY = """
-Мы уважаем вашу конфиденциальность и строго соблюдаем все нормы защиты данных. Мы собираем и используем только те данные, которые необходимы для предоставления наших услуг. Все данные хранятся в безопасности и ни при каких обстоятельствах не будут переданы третьим лицам без вашего согласия.
-"""
-
-logger.warning(POLICY)

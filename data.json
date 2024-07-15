@@ -5,5 +5,5 @@
     "host": "https://api.rus-gpt.com/v1",
     "model": "casperhansen/llama-3-70B-instruct-awq",
     "name": "Llama-3-70b",
-    "max_tokens": "10000"
+    "max_tokens": "1500"
 }

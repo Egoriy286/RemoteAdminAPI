@@ -10,10 +10,7 @@ RUN pip install -r requirements.txt
 WORKDIR /app
 
 # Копирование файлов приложения в образ контейнера
-COPY app.py /app
-COPY api.py /app
-COPY bot.py /app
-COPY data.json /app
+COPY . .
 
 # Экспонирование порта 5000
 EXPOSE 5000
