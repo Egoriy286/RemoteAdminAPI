@@ -33,7 +33,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ github.repository }}
+          tags: ${{ github.repository }}:main
 
       - name: SSH Deploy
         uses: appleboy/ssh-action@master
@@ -43,7 +43,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}  # или использовать ${{ secrets.SERVER_SSH_PRIVATE_KEY }} в зависимости от настроек сервера
           port: ${{ secrets.SERVER_SSH_PORT }}
           script: |
-            docker pull ghcr.io/${{ github.repository }}
+            docker pull ghcr.io/${{ github.repository }}:main
             docker stop my-container || true
             docker rm my-container || true
-            docker run -d -p 5000:5000 --name my-container ghcr.io/${{ github.repository }}
+            docker run -d -p 5000:5000 --name my-container ghcr.io/${{ github.repository }}:main
