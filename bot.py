@@ -1,5 +1,7 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
+
+import requests
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart, Command
 from aiogram import F
@@ -24,9 +26,9 @@ HOST = None
 client = None
 bot = None
 dp = None
-
+ADMIN_HOST = None
 def config():
-    global API_TOKEN, NAME, MODEL, SECRET_KEY, HOST, client, bot, dp, MAX_TOKENS
+    global API_TOKEN, NAME, MODEL, SECRET_KEY, HOST, client, bot, dp, MAX_TOKENS,ADMIN_HOST
     with open(json_file_path, 'r') as file:
         data = json.load(file)
 
@@ -37,6 +39,7 @@ def config():
     MAX_TOKENS = data['max_tokens']
     HOST = data['host']
     NAME = data['name']
+    ADMIN_HOST = data['admin_host']
     file.close()
     try:
         client = openai.AsyncOpenAI(
@@ -159,7 +162,20 @@ async def echo(message: types.Message):
 def POLICY(message: types.Message):
     return message.answer(POLICY)
 
+# Создаем обработчик для отправки логов через POST запрос
+class FlaskPostHandler(logging.Handler):
+    def emit(self, record):
+        global ADMIN_HOST
+        try:
+            log_entry = self.format(record)  # Форматируем запись лога
+            url = f'http://{ADMIN_HOST}/log'  # Укажите URL вашего Flask приложения
+            headers = {'Content-Type': 'text/plain'}
+            requests.post(url, headers=headers, data=log_entry)
+        except(Exception):
+            logger.warning("logs no send please check connection")
 
+# Добавляем обработчик к логгеру
+logger.addHandler(FlaskPostHandler())
 
 def start_bot():
 

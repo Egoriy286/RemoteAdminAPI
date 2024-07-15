@@ -1,3 +1,4 @@
 Flask~=3.0.3
 openai~=1.35.13
 aiogram~=3.10.0
+requests
