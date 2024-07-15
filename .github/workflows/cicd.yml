@@ -1,0 +1,54 @@
+name: CI/CD Pipeline v1.0
+
+on:
+  push:
+    branches:
+      - main  # Триггерить пайплайн на пуш в ветку main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: server1
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Extract metadata (tags, labels) for Docker image
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}
+          
+      - name: Build and push Docker image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: SSH Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}  # или использовать ${{ secrets.SERVER_SSH_PRIVATE_KEY }} в зависимости от настроек сервера
+          port: ${{ secrets.SERVER_SSH_PORT }}
+          script: |
+            docker pull ${{ steps.meta.outputs.tags }}
+            docker stop my-container || true
+            docker rm my-container || true
+            docker run -d -p 5000:5000 --name my-container ${{ steps.meta.outputs.tags }}
