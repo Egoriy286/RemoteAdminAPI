@@ -6,8 +6,11 @@ on:
       - main  # Триггерить пайплайн на пуш в ветку main
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
 
     steps:
       - name: Checkout repository
