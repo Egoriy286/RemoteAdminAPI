@@ -172,7 +172,8 @@ class FlaskPostHandler(logging.Handler):
             headers = {'Content-Type': 'text/plain'}
             requests.post(url, headers=headers, data=log_entry)
         except(Exception):
-            logger.warning("logs no send please check connection")
+            pass
+
 
 # Добавляем обработчик к логгеру
 logger.addHandler(FlaskPostHandler())
@@ -181,11 +182,9 @@ def start_bot():
 
     while (True):
         try:
-            logger.warning("bot successful start")
             asyncio.run(dp.start_polling(bot))
         except(Exception):
             config()
-            logger.critical("bot not start please check")
             time.sleep(8)
 
 if __name__ == "__main__":
