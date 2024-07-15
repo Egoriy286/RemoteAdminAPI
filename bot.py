@@ -158,7 +158,7 @@ async def echo(message: types.Message):
 
     await message.answer(response_text)
 
-@dp.message(F.text, Command("policy"))
+@dp.message(Command('policy'))
 def POLICY(message: types.Message):
     return message.answer(POLICY)
 
