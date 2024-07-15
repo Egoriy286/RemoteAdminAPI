@@ -45,4 +45,4 @@ jobs:
             docker pull ghcr.io/${{ github.repository_owner }}/apiPython1:latest
             docker stop apiPython || true
             docker rm apiPython || true
-            docker run -d -p 3000:3000 --name apiPython ghcr.io/${{ github.repository_owner }}/apiPython1:latest
+            docker run -d -p 5000:5000 --name apiPython ghcr.io/${{ github.repository_owner }}/apiPython1:latest
