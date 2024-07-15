@@ -6,5 +6,5 @@
     "model": "casperhansen/llama-3-70B-instruct-awq",
     "name": "Llama-3-70b",
     "max_tokens": "1500",
-    "admin_host": "127.0.0.1:5001"
+    "admin_host": "proegdev.site:5001"
 }
